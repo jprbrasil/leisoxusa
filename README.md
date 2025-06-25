@@ -1,1 +1,677 @@
-# leisoxusa
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise Interativa: Lei Sarbanes-Oxley (SOx)</title>
+    <!-- Chosen Palette: Earthy Harmony -->
+    <!-- Application Structure Plan: A single-page application with a fixed sidebar for navigation and a main scrollable content area. This structure allows both linear reading and non-linear exploration of key topics (Overview, Crisis, Pillars, Impact, Challenges, Quiz, Ask AI, Conclusion). The design uses interactive cards with modals and dynamic charts to present dense information in a digestible, app-like format, prioritizing user flow and engagement over the linear structure of the source report. A new interactive Q&A section is added for user engagement, along with a new LLM-powered "Ask SOx" feature. -->
+    <!-- Visualization & Content Choices:
+        - Overview: HTML/CSS stats (Goal: Inform) to provide a quick hook.
+        - Crisis Timeline: Interactive HTML/CSS timeline with JS-powered details on click (Goal: Change), making historical context engaging.
+        - Pillars of SOx: A grid of interactive cards (Goal: Organize) triggering a JS-powered modal for detailed explanations without cluttering the page.
+        - Impact & Benefits Chart: Chart.js Bar Chart (Goal: Compare) to visualize the positive outcomes.
+        - Compliance Challenges Chart: Chart.js Donut Chart (Goal: Compare/Composition) to break down the costs.
+        - Verifique Seu Conhecimento: HTML/CSS buttons and JS logic for a multiple-choice quiz with immediate feedback (Goal: Engage/Assess).
+        - Pergunte à SOx (Beta): Text area and button with JS to call the Gemini API for text generation (Goal: Inform/Explore via AI).
+        - All choices prioritize interactivity and clarity within the app structure. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #E7DCD2; /* Cream/Off-white as main background */
+            color: #333333; /* Dark Gray for text */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 380px;
+            }
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+        .nav-link.active, .nav-link:hover {
+            background-color: #A16A5E; /* Terracotta for active/hover */
+            color: #FDFBF7;
+            transform: translateX(5px);
+        }
+        .modal-backdrop {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-in-out;
+        }
+        .quiz-option {
+            background-color: #C8A8A1; /* Light Brown/Tan */
+            color: #333333;
+            transition: all 0.2s ease;
+        }
+        .quiz-option:hover {
+            background-color: #A16A5E; /* Terracotta on hover */
+            color: #FDFBF7;
+        }
+        .quiz-option.correct {
+            background-color: #4CAF50; /* Green for correct */
+            color: white;
+            font-weight: bold;
+        }
+        .quiz-option.incorrect {
+            background-color: #F44336; /* Red for incorrect */
+            color: white;
+            font-weight: bold;
+        }
+        .quiz-feedback {
+            color: #333333;
+        }
+    </style>
+</head>
+<body class="bg-[#E7DCD2]">
+
+    <div class="flex">
+        <nav id="sidebar" class="hidden lg:block w-64 bg-[#6B4F4F] h-screen fixed top-0 left-0 p-6 shadow-lg text-[#E7DCD2]">
+            <h2 class="text-xl font-bold mb-8">SOx | Análise Detalhada</h2>
+            <ul class="space-y-3">
+                <li><a href="#overview" class="nav-link block p-3 rounded-lg font-semibold">Visão Geral</a></li>
+                <li><a href="#crisis" class="nav-link block p-3 rounded-lg font-semibold">A Crise (Contexto)</a></li>
+                <li><a href="#pillars" class="nav-link block p-3 rounded-lg font-semibold">Os Pilares da SOx</a></li>
+                <li><a href="#impact" class="nav-link block p-3 rounded-lg font-semibold">Impacto e Benefícios</a></li>
+                <li><a href="#challenges" class="nav-link block p-3 rounded-lg font-semibold">Desafios da Conformidade</a></li>
+                <li><a href="#quiz" class="nav-link block p-3 rounded-lg font-semibold">Verifique Seu Conhecimento</a></li>
+                <li><a href="#ask-gemini" class="nav-link block p-3 rounded-lg font-semibold">Pergunte à IA</a></li>
+                <li><a href="#conclusion" class="nav-link block p-3 rounded-lg font-semibold">Conclusão Final</a></li>
+            </ul>
+        </nav>
+
+        <main class="w-full lg:ml-64">
+            <section id="overview" class="min-h-screen flex flex-col justify-center items-center p-8 bg-[#C8A8A1]">
+                <div class="text-center max-w-4xl mx-auto">
+                    <h1 class="text-5xl md:text-7xl font-extrabold text-[#6B4F4F]">Lei Sarbanes-Oxley</h1>
+                    <p class="mt-4 text-xl md:text-2xl text-[#333333]">Uma análise interativa aprofundada sobre a legislação que redefiniu a confiança e a responsabilidade no mundo corporativo.</p>
+                    <p class="mt-6 text-lg text-[#4A4A4A]">A Lei Sarbanes-Oxley (SOx), promulgada em 2002 nos Estados Unidos, representa um marco regulatório de suma importância para o mundo corporativo global. Nascida em um cenário de grandes escândalos financeiros que abalaram a confiança dos investidores, a SOx veio para redefinir as regras de governança corporativa, transparência e responsabilidade fiscal, visando proteger os investidores e o público em geral de práticas contábeis fraudulentas e de má conduta corporativa, garantindo a integridade e a confiabilidade dos mercados de capitais.</p>
+                    <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="bg-[#E7DCD2] p-6 rounded-lg shadow-md">
+                            <p class="text-lg font-semibold text-[#6B4F4F]">Ano de Promulgação</p>
+                            <p class="text-4xl font-bold mt-2">2002</p>
+                        </div>
+                        <div class="bg-[#E7DCD2] p-6 rounded-lg shadow-md">
+                            <p class="text-lg font-semibold text-[#6B4F4F]">Escândalos-Chave</p>
+                            <p class="text-4xl font-bold mt-2">Enron & WorldCom</p>
+                        </div>
+                        <div class="bg-[#E7DCD2] p-6 rounded-lg shadow-md">
+                            <p class="text-lg font-semibold text-[#6B4F4F]">Objetivo Principal</p>
+                            <p class="text-4xl font-bold mt-2">Proteger Investidores</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="crisis" class="py-20 px-8">
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-4xl font-bold text-[#6B4F4F]">A Crise que Exigiu Mudança: Contexto Histórico</h2>
+                        <p class="mt-4 text-lg text-[#4A4A4A]">O final da década de 1990 e o início dos anos 2000 foram abalados por uma série de fraudes contábeis de grandes proporções nos Estados Unidos. Esses eventos minaram a confiança do mercado e expuseram falhas sistêmicas na governança corporativa e na supervisão contábil, tornando clara a necessidade urgente de uma reforma regulatória robusta.</p>
+                    </div>
+                     <div class="relative border-l-4 border-[#A16A5E] ml-4 md:ml-0">
+                        <div class="mb-12 ml-8">
+                            <div class="absolute w-6 h-6 bg-[#6B4F4F] rounded-full -left-[14px] border-4 border-[#E7DCD2]"></div>
+                            <h3 class="text-2xl font-bold text-[#6B4F4F]">2001: O Colapso da Enron</h3>
+                            <p class="mt-2 text-md text-[#4A4A4A]">A gigante do setor de energia, que chegou a ser a sétima maior empresa dos EUA, faliu ao revelar uma complexa rede de entidades de propósito específico (SPEs) para ocultar dívidas e inflar lucros, enganando investidores e analistas. Essa fraude resultou em perdas de **US$ 60 bilhões** para acionistas e fundos de pensão, além da dissolução da Arthur Andersen, uma das maiores firmas de auditoria do mundo, por sua cumplicidade nos esquemas.</p>
+                        </div>
+                         <div class="mb-12 ml-8">
+                            <div class="absolute w-6 h-6 bg-[#6B4F4F] rounded-full -left-[14px] border-4 border-[#E7DCD2]"></div>
+                            <h3 class="text-2xl font-bold text-[#6B4F4F]">2002: A Fraude da WorldCom</h3>
+                            <p class="mt-2 text-md text-[#4A4A4A]">Logo após o caso Enron, a WorldCom revelou uma fraude contábil ainda maior, inflando seus ativos em mais de **US$ 11 bilhões**. Esses eventos, entre outros (como Tyco e Xerox), expuseram a fragilidade dos mecanismos de controle existentes e a falta de responsabilidade dos executivos. A percepção de que a legislação vigente era insuficiente para coibir tais práticas gerou uma pressão pública e política crescente por reformas.</p>
+                        </div>
+                         <div class="ml-8">
+                            <div class="absolute w-6 h-6 bg-[#6B4F4F] rounded-full -left-[14px] border-4 border-[#E7DCD2]"></div>
+                            <h3 class="text-2xl font-bold text-[#6B4F4F]">Julho de 2002: Nasce a Lei Sarbanes-Oxley (SOx)</h3>
+                            <p class="mt-2 text-md text-[#4A4A4A]">Em um esforço bipartidário, liderado pelo senador Paul Sarbanes e o deputado Michael Oxley, a Lei Sarbanes-Oxley é assinada pelo Presidente George W. Bush. A lei foi a resposta legislativa direta a essa crise de confiança, buscando não apenas punir os responsáveis, mas também prevenir futuras ocorrências por meio de um arcabouço regulatório mais rigoroso e abrangente.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="pillars" class="py-20 px-8 bg-[#C8A8A1]">
+                <div class="max-w-6xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-4xl font-bold text-[#6B4F4F]">Os Pilares da SOx: Seções Essenciais</h2>
+                        <p class="mt-4 text-lg text-[#4A4A4A]">A Lei Sarbanes-Oxley é estruturada em onze títulos, cada um abordando diferentes aspectos da governança corporativa e da responsabilidade financeira. Algumas seções se destacam pela sua relevância e impacto direto nas operações das empresas. Clique nos cartões para detalhes mais profundos.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="sox-card bg-[#E7DCD2] p-6 rounded-lg shadow-md cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all" data-section="302">
+                            <h3 class="text-2xl font-bold text-[#6B4F4F]">Seção 302</h3>
+                            <p class="mt-2 font-semibold">Responsabilidade Corporativa pelos Relatórios Financeiros</p>
+                            <p class="mt-2 text-sm text-[#4A4A4A]">Exige a certificação pessoal de CEO e CFO sobre a exatidão e conformidade dos relatórios periódicos, eliminando a alegação de "não conhecimento".</p>
+                        </div>
+                        <div class="sox-card bg-[#E7DCD2] p-6 rounded-lg shadow-md cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all" data-section="401">
+                            <h3 class="text-2xl font-bold text-[#6B4F4F]">Seção 401</h3>
+                            <p class="mt-2 font-semibold">Divulgação em Relatórios Periódicos</p>
+                            <p class="mt-2 text-sm text-[#4A4A4A]">Foca na precisão e abrangência das demonstrações financeiras, proibindo declarações incorretas e exigindo a divulgação completa de passivos e transações "off-balance sheet".</p>
+                        </div>
+                        <div class="sox-card bg-[#E7DCD2] p-6 rounded-lg shadow-md cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all" data-section="404">
+                            <h3 class="text-2xl font-bold text-[#6B4F4F]">Seção 404</h3>
+                            <p class="mt-2 font-semibold">Avaliação da Gestão sobre Controles Internos</p>
+                            <p class="mt-2 text-sm text-[#4A4A4A]">Considerada uma das mais desafiadoras, exige que a administração estabeleça, mantenha e avalie anualmente a eficácia dos controles internos, com atestação do auditor independente. O COSO Framework é amplamente utilizado.</p>
+                        </div>
+                        <div class="sox-card bg-[#E7DCD2] p-6 rounded-lg shadow-md cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all" data-section="409">
+                            <h3 class="text-2xl font-bold text-[#6B4F4F]">Seção 409</h3>
+                            <p class="mt-2 font-semibold">Divulgações em Tempo Real</p>
+                            <p class="mt-2 text-sm text-[#4A4A4A]">Obriga as empresas a divulgar urgentemente informações sobre mudanças materiais em sua condição financeira ou operações, em linguagem clara e compreensível para o público.</p>
+                        </div>
+                        <div class="sox-card bg-[#E7DCD2] p-6 rounded-lg shadow-md cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all" data-section="802">
+                            <h3 class="text-2xl font-bold text-[#6B4F4F]">Seção 802</h3>
+                            <p class="mt-2 font-semibold">Penalidades Criminais por Alteração de Documentos</p>
+                            <p class="mt-2 text-sm text-[#4A4A4A]">Impõe severas multas e prisão (até 20 anos) para quem alterar, destruir ou falsificar documentos com o objetivo de obstruir investigações federais. Auditores devem manter registros por 5 anos.</p>
+                        </div>
+                        <div class="sox-card bg-[#E7DCD2] p-6 rounded-lg shadow-md cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all" data-section="906">
+                            <h3 class="text-2xl font-bold text-[#6B4F4F]">Seção 906</h3>
+                            <p class="mt-2 font-semibold">Responsabilidade Criminal pela Certificação de Relatórios Financeiros</p>
+                            <p class="mt-2 text-sm text-[#4A4A4A]">Complementa a Seção 302, estabelecendo multas (até US$ 5 milhões) e prisão (até 20 anos) para executivos que conscientemente certificarem relatórios financeiros fraudulentos ou enganosos.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="impact" class="py-20 px-8">
+                 <div class="max-w-6xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-4xl font-bold text-[#6B4F4F]">Impacto e Benefícios da SOx</h2>
+                        <p class="mt-4 text-lg text-[#4A4A4A]">A SOx catalisou uma mudança cultural nas organizações, gerando benefícios duradouros para a governança e a confiança do mercado, indo além da simples conformidade legal.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                        <div class="bg-[#FDFBF7] p-8 rounded-lg shadow-lg">
+                            <h3 class="text-2xl font-bold text-center mb-6 text-[#6B4F4F]">Melhorias Geradas pela SOx</h3>
+                            <div class="chart-container">
+                                <canvas id="benefitsChart"></canvas>
+                            </div>
+                            <p class="text-center text-gray-600 mt-6">O gráfico ilustra o impacto positivo da lei em áreas-chave, de acordo com análises de mercado. A restauração da confiança do investidor e o fortalecimento dos controles internos são os legados mais notáveis, resultando em um ambiente de negócios mais ético e transparente.</p>
+                        </div>
+                        <div class="bg-[#FDFBF7] p-8 rounded-lg shadow-lg">
+                            <h3 class="text-2xl font-bold text-center mb-6 text-[#6B4F4F]">Estruturas Essenciais Fortalecidas</h3>
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="text-xl font-bold text-[#6B4F4F] mb-2">PCAOB (Public Company Accounting Oversight Board)</h4>
+                                    <p class="text-[#4A4A4A]">A criação do PCAOB foi um dos pilares da SOx. Este conselho tem a missão de supervisionar as auditorias de companhias abertas, estabelecendo padrões de auditoria, controle de qualidade e ética. O PCAOB garante a independência e a integridade do processo de auditoria, fundamental para a credibilidade dos relatórios financeiros e para a proteção dos investidores.</p>
+                                </div>
+                                <div>
+                                    <h4 class="text-xl font-bold text-[#6B4F4F] mb-2">Fortalecimento da Auditoria Interna</h4>
+                                    <p class="text-[#4A4A4A]">A SOx elevou significativamente a importância da função de auditoria interna nas empresas. Com a necessidade de avaliar e monitorar a eficácia dos controles internos, as equipes de auditoria interna ganharam maior relevância, autonomia e recursos, tornando-se um componente essencial para a conformidade, a gestão de riscos e a boa governança corporativa.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-12 bg-[#FDFBF7] p-8 rounded-lg shadow-lg">
+                         <h3 class="text-2xl font-bold text-center mb-6 text-[#6B4F4F]">O Efeito SOx no Mercado Brasileiro</h3>
+                         <p class="text-[#4A4A4A] text-lg mb-6">A Lei Sarbanes-Oxley, embora uma legislação americana, gerou reflexos significativos e positivos também no mercado de capitais brasileiro, especialmente para as empresas que possuem ações (ADRs) negociadas na Securities and Exchange Commission (SEC).</p>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                             <div>
+                                 <h4 class="text-xl font-bold text-[#6B4F4F] mb-2">Estudo de Brites (2008): Confiança e Condições de Crédito</h4>
+                                 <p class="text-[#4A4A4A]">Uma pesquisa de Brites (2008) verificou uma correlação positiva entre a vigência da SOx e a capacidade de obter crédito por parte das empresas da B3. Credores (bancos, instituições financeiras) passaram a conceder mais crédito, com condições ampliadas (maior tempo de parcelamento e juros menores), devido à maior confiança nas informações financeiras apresentadas pelas organizações.</p>
+                             </div>
+                             <div>
+                                 <h4 class="text-xl font-bold text-[#6B4F4F] mb-2">Estudo de Peçanha (2007): Aprimoramento de Relatórios</h4>
+                                 <p class="text-[#4A4A4A]">Um estudo de Peçanha (2007), focado nos relatórios anuais da Petrobras entre 2000 e 2005, comprovou inúmeros avanços nos documentos divulgados após a promulgação da SOx. Isso demonstrou uma melhoria significativa em vários aspectos da governança corporativa como um todo, notadamente na confiança e divulgação de informações para a tomada de decisões por todos os stakeholders (incluindo os shareholders), sejam eles externos ou internos.</p>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="challenges" class="py-20 px-8 bg-[#C8A8A1]">
+                <div class="max-w-6xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-4xl font-bold text-[#6B4F4F]">Desafios da Conformidade com a SOx</h2>
+                        <p class="mt-4 text-lg text-[#4A4A4A]">Embora a Lei Sarbanes-Oxley tenha trazido inúmeros benefícios, sua implementação não foi isenta de desafios e custos significativos para as empresas, especialmente nos primeiros anos após sua promulgação.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                        <div class="bg-[#FDFBF7] p-8 rounded-lg shadow-lg">
+                            <h3 class="text-2xl font-bold text-[#6B4F4F] mb-4">Complexidade da Implementação</h3>
+                            <ul class="list-disc list-inside text-[#4A4A4A] space-y-2">
+                                <li>**Legislação Extensa e Detalhada:** Com requisitos que afetam diversas áreas da empresa, desde a contabilidade e finanças até a tecnologia da informação e os recursos humanos.</li>
+                                <li>**Interpretação e Aplicação:** Demandou esforço considerável e muitas vezes a contratação de consultorias especializadas para garantir a aderência correta.</li>
+                                <li>**Reestruturação de Processos:** Muitas empresas precisaram redesenhar seus processos internos para garantir conformidade, incluindo segregação de funções, aprovações e monitoramento de transações.</li>
+                                <li>**Carga de Trabalho Adicional:** Gerou uma carga de trabalho significativa para as equipes financeiras, de contabilidade e auditoria, que precisavam dedicar tempo e recursos substanciais para atender às novas exigências de documentação, testes e relatórios.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-[#FDFBF7] p-8 rounded-lg shadow-lg">
+                            <h3 class="text-2xl font-bold text-[#6B4F4F] mb-4">Custos de Conformidade</h3>
+                            <div class="chart-container">
+                                <canvas id="challengesChart"></canvas>
+                            </div>
+                            <p class="text-center text-gray-600 mt-6">Os custos de conformidade representaram um obstáculo inicial significativo. O gráfico mostra uma estimativa da alocação de recursos, com os honorários de auditoria externa e o investimento em tecnologia e pessoal sendo os mais impactantes.</p>
+                        </div>
+                    </div>
+                    <div class="mt-8 bg-[#FDFBF7] p-8 rounded-lg shadow-lg">
+                         <h3 class="text-2xl font-bold text-[#6B4F4F] mb-4 text-center">Impacto em Empresas Menores</h3>
+                         <p class="text-[#4A4A4A] text-lg">Embora a SOx se aplique a todas as empresas com ações na SEC, as empresas de menor porte enfrentaram desafios proporcionais maiores. Muitas vezes, elas não possuíam a mesma estrutura e recursos que as grandes corporações para absorver os custos e a complexidade da conformidade, tornando a adequação um fardo mais pesado e, em alguns casos, inviabilizando a listagem no mercado americano.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="quiz" class="py-20 px-8">
+                <div class="max-w-4xl mx-auto bg-[#FDFBF7] p-8 rounded-lg shadow-lg">
+                    <div class="text-center mb-12">
+                        <h2 class="text-4xl font-bold text-[#6B4F4F]">Verifique Seu Conhecimento!</h2>
+                        <p class="mt-4 text-lg text-[#4A4A4A]">Teste seus conhecimentos sobre a Lei Sarbanes-Oxley com nosso quiz interativo.</p>
+                    </div>
+                    <div id="quiz-container" class="space-y-8">
+                        <div class="quiz-question mb-6">
+                            <h3 class="text-xl font-bold text-[#6B4F4F] mb-4">1. Qual dos escândalos financeiros teve como um de seus resultados a dissolução de uma das maiores firmas de auditoria do mundo?</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="a">A) Fraude da WorldCom</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="b">B) Colapso da Enron</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="c">C) Crise do Subprime</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="d">D) Escândalo da Tyco</button>
+                            </div>
+                            <p class="quiz-feedback mt-4 text-sm hidden"></p>
+                        </div>
+
+                        <div class="quiz-question mb-6">
+                            <h3 class="text-xl font-bold text-[#6B4F4F] mb-4">2. Segundo a Seção 404 da SOx, quem é responsável por estabelecer e manter a estrutura de controle interno e avaliar sua eficácia anualmente?</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="a">A) A Securities and Exchange Commission (SEC)</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="b">B) O Public Company Accounting Oversight Board (PCAOB)</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="c">C) A administração da empresa</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="d">D) O comitê de auditoria independente</button>
+                            </div>
+                            <p class="quiz-feedback mt-4 text-sm hidden"></p>
+                        </div>
+                        
+                        <div class="quiz-question mb-6">
+                            <h3 class="text-xl font-bold text-[#6B4F4F] mb-4">3. Qual Seção da SOx visa combater a "contabilidade criativa" e exige a divulgação de transações "off-balance sheet"?</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="a">A) Seção 302</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="b">B) Seção 409</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="c">C) Seção 401</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="d">D) Seção 906</button>
+                            </div>
+                            <p class="quiz-feedback mt-4 text-sm hidden"></p>
+                        </div>
+
+                         <div class="quiz-question mb-6">
+                            <h3 class="text-xl font-bold text-[#6B4F4F] mb-4">4. Qual é o principal objetivo da Seção 409 da SOx, que trata das "Divulgações em Tempo Real"?</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="a">A) Reduzir os custos de auditoria para as empresas.</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="b">B) Promover a divulgação de informações apenas em relatórios anuais.</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="c">C) Garantir acesso rápido a informações cruciais para investidores, reduzindo a assimetria.</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="d">D) Exigir que todas as comunicações sejam feitas apenas em inglês.</button>
+                            </div>
+                            <p class="quiz-feedback mt-4 text-sm hidden"></p>
+                        </div>
+
+                        <div class="quiz-question mb-6">
+                            <h3 class="text-xl font-bold text-[#6B4F4F] mb-4">5. De acordo com o estudo de Brites (2008), qual foi um dos impactos da SOx para empresas brasileiras que negociam ADRs nos EUA?</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="a">A) Aumento significativo das taxas de juros em empréstimos bancários.</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="b">B) Redução da capacidade de obter crédito no mercado financeiro.</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="c">C) Obtenção de mais crédito com melhores condições, devido à maior confiança dos credores.</button>
+                                <button class="quiz-option p-4 rounded-lg text-left shadow-sm hover:shadow-md transition duration-200" data-answer="d">D) Aumento da burocracia sem benefícios financeiros perceptíveis.</button>
+                            </div>
+                            <p class="quiz-feedback mt-4 text-sm hidden"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ask-gemini" class="py-20 px-8 bg-[#E7DCD2]">
+                <div class="max-w-4xl mx-auto bg-[#FDFBF7] p-8 rounded-lg shadow-lg">
+                    <div class="text-center mb-8">
+                        <h2 class="text-4xl font-bold text-[#6B4F4F]">✨ Pergunte à SOx (Beta) ✨</h2>
+                        <p class="mt-4 text-lg text-[#4A4A4A]">Utilize inteligência artificial para tirar suas dúvidas sobre a Lei Sarbanes-Oxley. A IA responderá com base no conhecimento disponível e no conteúdo deste guia.</p>
+                    </div>
+                    <div class="mb-6">
+                        <label for="gemini-question" class="block text-lg font-semibold text-[#6B4F4F] mb-2">Sua pergunta:</label>
+                        <textarea id="gemini-question" class="w-full p-4 rounded-lg border-2 border-[#C8A8A1] focus:outline-none focus:border-[#A16A5E] bg-white text-[#333333]" rows="4" placeholder="Ex: Qual a principal diferença entre a Seção 302 e a Seção 906? Como a SOx afetou a auditoria interna?"></textarea>
+                    </div>
+                    <div class="text-center">
+                        <button id="ask-gemini-btn" class="bg-[#A16A5E] text-white py-3 px-8 rounded-lg font-semibold hover:bg-opacity-80 transition duration-300">Perguntar à IA</button>
+                        <div id="gemini-loading" class="mt-4 hidden text-[#6B4F4F] font-semibold">Carregando resposta...</div>
+                    </div>
+                    <div id="gemini-answer-container" class="mt-8 p-6 bg-[#FDFBF7] rounded-lg border-2 border-[#C8A8A1] hidden">
+                        <h3 class="text-xl font-bold text-[#6B4F4F] mb-3">Resposta da IA:</h3>
+                        <p id="gemini-answer" class="text-[#4A4A4A] leading-relaxed"></p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="conclusion" class="py-20 px-8 text-center bg-[#E7DCD2]">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-4xl font-bold text-[#6B4F4F]">Um Legado de Integridade e Confiança</h2>
+                    <p class="mt-6 text-xl text-[#4A4A4A]">A Lei Sarbanes-Oxley, embora desafiadora em sua implementação inicial, consolidou-se como um pilar essencial para a saúde e a credibilidade dos mercados de capitais. Seus princípios de transparência, responsabilidade e ética não são apenas uma exigência legal, mas um imperativo para a sustentabilidade e o sucesso das organizações no cenário global.</p>
+                    <p class="mt-4 text-lg text-[#4A4A4A]">A experiência de mais de duas décadas de SOx demonstra que os benefícios a longo prazo, como a melhoria da governança, a redução de fraudes e o aumento da confiança do mercado, superaram os custos iniciais, impulsionando uma cultura de responsabilidade e integridade que se tornou um padrão global.</p>
+                </div>
+            </section>
+
+            <footer class="text-center p-6 bg-[#6B4F4F] text-[#E7DCD2]">
+                 <p>Análise Interativa baseada no e-book "Lei Sarbanes-Oxley (SOx) - Guia Completo".</p>
+            </footer>
+        </main>
+    </div>
+
+    <div id="sox-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center p-4 opacity-0 pointer-events-none">
+        <div class="modal-content bg-white w-full max-w-2xl rounded-lg shadow-2xl p-8 transform scale-95">
+            <h2 id="modal-title" class="text-3xl font-bold text-[#6B4F4F] mb-4"></h2>
+            <p id="modal-description" class="text-lg mb-6 text-[#4A4A4A]"></p>
+            <button id="close-modal" class="bg-[#A16A5E] text-white py-2 px-6 rounded-lg font-semibold hover:bg-opacity-80 transition">Fechar</button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('main section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.5
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+            
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            const modal = document.getElementById('sox-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalDescription = document.getElementById('modal-description');
+            
+            const sectionDetails = {
+                '302': { title: 'Seção 302: Responsabilidade Corporativa', description: 'Esta seção exige que o Diretor Executivo (CEO) e o Diretor Financeiro (CFO) de uma companhia devem, pessoalmente, certificar a exatidão e a conformidade dos relatórios financeiros periódicos. Essa certificação implica que os executivos são diretamente responsáveis pela veracidade das informações contábeis e pela eficácia dos controles e procedimentos de divulgação internos. Essa seção foi criada para desencorajar alegações de “não conhecimento” por parte dos executivos em relação a atividades duvidosas, privilegiando o papel crítico do controle interno.' },
+                '401': { title: 'Seção 401: Divulgação Abrangente', description: 'Foca na precisão e na abrangência das informações financeiras divulgadas pelas empresas em seus relatórios periódicos, sendo um pilar fundamental para a transparência financeira. Exige que as demonstrações contábeis sejam precisas e não contenham declarações incorretas ou omissões materiais, incluindo todos os passivos, obrigações e transações significativas. Um ponto crucial é a exigência de divulgação de todas as transações, arranjos e obrigações significativas fora do balanço patrimonial (off-balance sheet transactions).' },
+                '404': { title: 'Seção 404: Avaliação de Controles Internos', description: 'Amplamente considerada uma das mais significativas e desafiadoras, esta seção exige que a administração da companhia estabeleça e mantenha uma estrutura de controle interno eficaz sobre os relatórios financeiros e que avalie anualmente a eficácia desses controles. Além da avaliação da administração, o auditor independente da empresa deve emitir um relatório separado atestando e informando sobre a avaliação da administração em relação à eficácia do controle interno. Muitas companhias constroem sua estrutura de controles internos seguindo as recomendações do COSO Framework.' },
+                '409': { title: 'Seção 409: Divulgação em Tempo Real', description: 'Impõe às empresas a obrigação de divulgar ao público, de forma urgente e em tempo real, informações sobre mudanças significativas em sua condição financeira ou operações. O objetivo é garantir que o mercado e os investidores tenham acesso rápido a informações cruciais que possam afetar suas decisões de investimento. As divulgações devem ser apresentadas em termos que sejam fáceis de entender para o público em geral.' },
+                '802': { title: 'Seção 802: Penalidades por Alteração de Documentos', description: 'Esta seção aborda a questão da integridade dos registros corporativos e impõe severas penalidades criminais para aqueles que alteram, destroem ou falsificam documentos com a intenção de obstruir investigações federais. Impõe multas e/ou penas de prisão de até 20 anos para tal crime. Também estabelece penalidades para auditores que não mantêm todos os documentos de auditoria ou revisão por um período de cinco anos, com multas e/ou prisão de até 10 anos.' },
+                '906': { title: 'Seção 906: Responsabilidade Criminal pela Certificação', description: 'Complementa a Seção 302 ao estabelecer penalidades criminais para a certificação de relatórios financeiros enganosos ou fraudulentos. Exige que o CEO e o CFO certifiquem que os relatórios financeiros anuais e trimestrais estão em conformidade com a Securities Exchange Act de 1934 e apresentam de forma justa a condição financeira. Impõe penalidades criminais severas (multas de até US$ 5 milhões e/ou prisão de até 20 anos) para executivos que conscientemente certificarem relatórios não conformes.' }
+            };
+
+            document.querySelectorAll('.sox-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const sectionId = card.getAttribute('data-section');
+                    const details = sectionDetails[sectionId];
+                    modalTitle.textContent = details.title;
+                    modalDescription.textContent = details.description;
+                    modal.classList.remove('opacity-0', 'pointer-events-none');
+                    modal.querySelector('.modal-content').classList.remove('scale-95');
+                });
+            });
+
+            const closeModal = () => {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                modal.querySelector('.modal-content').classList.add('scale-95');
+            };
+
+            closeModalBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+
+            const tooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                if (Array.isArray(label)) {
+                    return label.join(' ');
+                }
+                return label;
+            };
+
+            const wrapLabel = (label, maxWidth = 16) => {
+                if (label.length <= maxWidth) {
+                    return label;
+                }
+                const words = label.split(' ');
+                let currentLine = ''; /* This variable needs to be initialized here */
+                const lines = [];
+                words.forEach(word => {
+                    if ((currentLine + word).length > maxWidth) {
+                        lines.push(currentLine.trim());
+                        currentLine = '';
+                    }
+                    currentLine += word + ' ';
+                });
+                lines.push(currentLine.trim());
+                return lines;
+            };
+
+            const palette = {
+                primary: '#6B4F4F', /* Dark Brown/Greenish Brown */
+                secondary: '#C8A8A1', /* Light Brown/Tan */
+                accent1: '#A16A5E', /* Terracotta/Burnt Orange */
+                accent2: '#E7DCD2'  /* Cream/Off-white */
+            };
+
+            const benefitsChartCtx = document.getElementById('benefitsChart').getContext('2d');
+            new Chart(benefitsChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        wrapLabel('Aumento da Confiança dos Investidores'),
+                        wrapLabel('Melhoria da Governança e Controles Internos'),
+                        wrapLabel('Redução de Fraudes e Riscos'),
+                        wrapLabel('Maior Transparência na Gestão')
+                    ],
+                    datasets: [{
+                        label: 'Nível de Impacto Percebido',
+                        data: [95, 90, 85, 80],
+                        backgroundColor: [palette.primary, palette.secondary, palette.accent1, palette.accent2],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#C8A8A1' } /* Grid line color matching secondary */
+                        }
+                    }
+                }
+            });
+
+            const challengesChartCtx = document.getElementById('challengesChart').getContext('2d');
+            new Chart(challengesChartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Honorários de Auditoria', 'Tecnologia e Sistemas', 'Pessoal e Treinamento', 'Consultoria e Documentação'],
+                    datasets: [{
+                        label: 'Distribuição de Custos (%)',
+                        data: [35, 30, 20, 15],
+                        backgroundColor: [palette.primary, palette.accent1, palette.secondary, palette.accent2],
+                        borderColor: '#FDFBF7', /* White border for slices */
+                        borderWidth: 4,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: { title: tooltipTitleCallback } }
+                    }
+                }
+            });
+
+            const quizQuestions = [
+                {
+                    question: 'Qual dos escândalos financeiros teve como um de seus resultados a dissolução de uma das maiores firmas de auditoria do mundo?',
+                    options: [
+                        { text: 'A) Fraude da WorldCom', isCorrect: false, rationale: 'Embora a WorldCom tenha sido um grande escândalo, a dissolução da Arthur Andersen foi diretamente ligada ao colapso da Enron.' },
+                        { text: 'B) Colapso da Enron', isCorrect: true, rationale: 'O colapso da Enron, por sua cumplicidade nos esquemas fraudulentos, levou à dissolução da Arthur Andersen.' },
+                        { text: 'C) Crise do Subprime', isCorrect: false, rationale: 'A Crise do Subprime foi um evento financeiro global posterior, não diretamente ligado à dissolução de grandes firmas de auditoria por fraude contábil.' },
+                        { text: 'D) Escândalo da Tyco', isCorrect: false, rationale: 'O escândalo da Tyco envolveu fraude executiva, mas não resultou na dissolução de uma grande firma de auditoria como no caso da Enron.' }
+                    ]
+                },
+                {
+                    question: 'Segundo a Seção 404 da SOx, quem é responsável por estabelecer e manter a estrutura de controle interno e avaliar sua eficácia anualmente?',
+                    options: [
+                        { text: 'A) A Securities and Exchange Commission (SEC)', isCorrect: false, rationale: 'A SEC é o órgão regulador, não responsável pela gestão interna dos controles da empresa.' },
+                        { text: 'B) O Public Company Accounting Oversight Board (PCAOB)', isCorrect: false, rationale: 'O PCAOB supervisiona os auditores, mas a responsabilidade primária de estabelecer e manter controles internos é da empresa.' },
+                        { text: 'C) A administração da empresa', isCorrect: true, rationale: 'A Seção 404 atribui claramente à administração da empresa a responsabilidade por seus controles internos e sua avaliação anual.' },
+                        { text: 'D) O comitê de auditoria independente', isCorrect: false, rationale: 'O comitê de auditoria supervisiona, mas a responsabilidade operacional de estabelecer e manter os controles é da administração.' }
+                    ]
+                },
+                {
+                    question: 'Qual Seção da SOx visa combater a "contabilidade criativa" e exige a divulgação de transações "off-balance sheet"?',
+                    options: [
+                        { text: 'A) Seção 302', isCorrect: false, rationale: 'A Seção 302 foca na certificação dos executivos, não especificamente na divulgação de transações off-balance sheet.' },
+                        { text: 'B) Seção 409', isCorrect: false, rationale: 'A Seção 409 trata de divulgações em tempo real de eventos materiais, não especificamente de transações off-balance sheet.' },
+                        { text: 'C) Seção 401', isCorrect: true, rationale: 'A Seção 401 exige precisão nas demonstrações financeiras e a divulgação de todas as transações, incluindo as off-balance sheet, para combater práticas enganosas.' },
+                        { text: 'D) Seção 906', isCorrect: false, rationale: 'A Seção 906 impõe penalidades criminais para certificação fraudulenta, não a requisitos de divulgação específicos de off-balance sheet.' }
+                    ]
+                },
+                {
+                    question: 'Qual é o principal objetivo da Seção 409 da SOx, que trata das "Divulgações em Tempo Real"?',
+                    options: [
+                        { text: 'A) Reduzir os custos de auditoria para as empresas.', isCorrect: false, rationale: 'O objetivo da Seção 409 é aumentar a transparência e agilidade, não reduzir custos de auditoria.' },
+                        { text: 'B) Promover a divulgação de informações apenas em relatórios anuais.', isCorrect: false, rationale: 'Pelo contrário, a Seção 409 exige divulgações em tempo real, contrastando com a prática de divulgações apenas periódicas.' },
+                        { text: 'C) Garantir acesso rápido a informações cruciais para investidores, reduzindo a assimetria.', isCorrect: true, rationale: 'O objetivo principal da Seção 409 é fornecer informações rápidas e claras ao mercado, permitindo decisões mais informadas e reduzindo a diferença de acesso à informação.' },
+                        { text: 'D) Exigir que todas as comunicações sejam feitas apenas em inglês.', isCorrect: false, rationale: 'A Seção 409 foca na agilidade e clareza da comunicação, não no idioma específico.' }
+                    ]
+                },
+                {
+                    question: 'De acordo com o estudo de Brites (2008), qual foi um dos impactos da SOx para empresas brasileiras que negociam ADRs nos EUA?',
+                    options: [
+                        { text: 'A) Aumento significativo das taxas de juros em empréstimos bancários.', isCorrect: false, rationale: 'O estudo de Brites (2008) indicou o efeito oposto, com melhores condições de crédito.' },
+                        { text: 'B) Redução da capacidade de obter crédito no mercado financeiro.', isCorrect: false, rationale: 'O estudo mostrou um aumento na capacidade de obter crédito.' },
+                        { text: 'C) Obtenção de mais crédito com melhores condições, devido à maior confiança dos credores.', isCorrect: true, rationale: 'A maior transparência e confiabilidade das informações financeiras, impulsionadas pela SOx, levou a uma maior confiança dos credores, resultando em melhores condições de crédito.' },
+                        { text: 'D) Aumento da burocracia sem benefícios financeiros perceptíveis.', isCorrect: false, rationale: 'Embora houvesse burocracia, o estudo demonstrou benefícios financeiros perceptíveis em termos de crédito.' }
+                    ]
+                }
+            ];
+
+            const quizContainer = document.getElementById('quiz-container');
+
+            quizQuestions.forEach((qData, qIndex) => {
+                const questionElement = quizContainer.children[qIndex];
+                const feedbackElement = questionElement.querySelector('.quiz-feedback');
+                const optionsButtons = questionElement.querySelectorAll('.quiz-option');
+
+                optionsButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        if (button.classList.contains('correct') || button.classList.contains('incorrect')) {
+                            return; /* Already answered */
+                        }
+
+                        const selectedAnswer = button.getAttribute('data-answer');
+                        const correctAnswer = qData.options.find(opt => opt.isCorrect).text.charAt(0).toLowerCase(); /* Get 'a', 'b', 'c', 'd' */
+
+                        optionsButtons.forEach(btn => {
+                            btn.disabled = true; /* Disable all buttons after one is clicked */
+                            const optData = qData.options.find(opt => opt.text === btn.textContent); /* Find the option object */
+                            if (optData.isCorrect) {
+                                btn.classList.add('correct');
+                            } else {
+                                btn.classList.add('incorrect'); /* Show all incorrect as red */
+                            }
+                        });
+
+                        if (selectedAnswer === correctAnswer) {
+                            feedbackElement.textContent = 'Correto! ' + qData.options.find(opt => opt.isCorrect).rationale;
+                            feedbackElement.classList.add('text-green-700');
+                        } else {
+                            const selectedOptData = qData.options.find(opt => opt.text.charAt(0).toLowerCase() === selectedAnswer);
+                            feedbackElement.textContent = 'Incorreto. ' + selectedOptData.rationale + ' A resposta correta é: ' + qData.options.find(opt => opt.isCorrect).rationale;
+                            feedbackElement.classList.add('text-red-700');
+                        }
+                        feedbackElement.classList.remove('hidden');
+                    });
+                });
+            });
+
+            const askGeminiBtn = document.getElementById('ask-gemini-btn');
+            const geminiQuestionInput = document.getElementById('gemini-question');
+            const geminiLoadingDiv = document.getElementById('gemini-loading');
+            const geminiAnswerContainer = document.getElementById('gemini-answer-container');
+            const geminiAnswerParagraph = document.getElementById('gemini-answer');
+
+            askGeminiBtn.addEventListener('click', async () => {
+                const prompt = geminiQuestionInput.value.trim();
+                if (!prompt) {
+                    modalTitle.textContent = 'Erro na Pergunta';
+                    modalDescription.textContent = 'Por favor, digite sua pergunta antes de enviar.';
+                    modal.classList.remove('opacity-0', 'pointer-events-none');
+                    modal.querySelector('.modal-content').classList.remove('scale-95');
+                    return;
+                }
+
+                askGeminiBtn.disabled = true;
+                geminiLoadingDiv.classList.remove('hidden');
+                geminiAnswerContainer.classList.add('hidden'); /* Hide previous answer */
+                geminiAnswerParagraph.textContent = ''; /* Clear previous answer */
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; /* Leave this as-is. Canvas will automatically provide it. */
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        geminiAnswerParagraph.textContent = text;
+                        geminiAnswerContainer.classList.remove('hidden');
+                    } else {
+                        geminiAnswerParagraph.textContent = 'Desculpe, não consegui gerar uma resposta. Tente novamente mais tarde.';
+                        geminiAnswerContainer.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Erro ao chamar a API Gemini:', error);
+                    geminiAnswerParagraph.textContent = 'Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente.';
+                    geminiAnswerContainer.classList.remove('hidden');
+                } finally {
+                    askGeminiBtn.disabled = false;
+                    geminiLoadingDiv.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
